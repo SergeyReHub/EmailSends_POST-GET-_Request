@@ -10,25 +10,25 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPostContents_success(t *testing.T) {
-	responseRecorder := httptest.NewRecorder()
-	ctx, engine := gin.CreateTestContext(responseRecorder)
-	engine.POST("/v1/api/emails", PostContents)
-	requestBody := `{"to":"serzh.rybakov.06@gmail.com","carbon_copy_recipients":["serzh.rybakov.06@mail.ru","jopa342@mail.ru"],"subject":"Test Subject","body":"This is a test email."}`
-	ctx.Request = httptest.NewRequest(http.MethodPost, "/v1/api/emails", bytes.NewBuffer([]byte(requestBody)))
-	engine.ServeHTTP(responseRecorder, ctx.Request)
-	
-	assert.Equal(t, http.StatusOK, responseRecorder.Code)
-	assert.Equal(t, requestBody, responseRecorder.Body.String())
+func Test_post_contents_success(t *testing.T) {
+	response_recorder := httptest.NewRecorder()
+	ctx, engine := gin.CreateTestContext(response_recorder)
+	engine.POST("/v1/api/emails", Post_contents)
+	request_body := `{"to":"serzh.rybakov.06@gmail.com","carbon_copy_recipients":["serzh.rybakov.06@mail.ru","jopa342@mail.ru"],"subject":"Test Subject","body":"This is a test email."}`
+	ctx.Request = httptest.NewRequest(http.MethodPost, "/v1/api/emails", bytes.NewBuffer([]byte(request_body)))
+	engine.ServeHTTP(response_recorder, ctx.Request)
+
+	assert.Equal(t, http.StatusOK, response_recorder.Code)
+	assert.Equal(t, request_body, response_recorder.Body.String())
 }
 
-func TestPostContents_failure(t *testing.T) {
-	responseRecorder := httptest.NewRecorder()
-	ctx, engine := gin.CreateTestContext(responseRecorder)
-	engine.POST("/v1/api/emails", PostContents)
+func Test_post_contents_failure(t *testing.T) {
+	response_recorder := httptest.NewRecorder()
+	ctx, engine := gin.CreateTestContext(response_recorder)
+	engine.POST("/v1/api/emails", Post_contents)
 
 	ctx.Request = httptest.NewRequest(http.MethodPost, "/v1/api/emails", nil)
-	engine.ServeHTTP(responseRecorder, ctx.Request)
+	engine.ServeHTTP(response_recorder, ctx.Request)
 
-	assert.Equal(t, http.StatusBadRequest, responseRecorder.Code)
+	assert.Equal(t, http.StatusBadRequest, response_recorder.Code)
 }
