@@ -100,7 +100,6 @@ func send_Email(email models.Email, ctx *gin.Context) error {
 		} else {
 			s = fmt.Sprintf("CC %s: успешно отправлено", cc)
 		}
-
 		if err != nil {
 			log.Println("Error DB table recepient:", err)
 			return err
