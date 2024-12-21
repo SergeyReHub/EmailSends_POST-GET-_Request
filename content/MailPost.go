@@ -17,10 +17,10 @@ import (
 )
 
 func Post_contents(ctx *gin.Context) {
-	var email models.Email //Getting email struct.
+	var email models.Email // Получаем структуру email.
 	if err := ctx.ShouldBindJSON(&email); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusBadRequest) // If email stract was not transferred programm will return StatusBadRequest.
+		ctx.AbortWithStatus(http.StatusBadRequest) // Если структура email не была передана, возвращаем статус BadRequest.
 		return
 	}
 
@@ -30,25 +30,30 @@ func Post_contents(ctx *gin.Context) {
 	}
 	defer pool.Close()
 
+	// Отправка email и получение статуса
 	err = send_Email(email, ctx)
 	var status string
 	if err != nil {
 		status = fmt.Sprintf("failed: %v", err) // Если отправка не удалась, устанавливаем статус с ошибкой
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
 	} else {
 		status = "sent" // Если отправка успешна, устанавливаем статус "sent"
 	}
 
+	// Вставка записи в базу данных
 	result, err := pool.Exec(ctx, "INSERT INTO messages (subject, body, send_to, status) VALUES ($1, $2, $3, $4)", email.Subject, email.Text, email.To, status)
 	if err != nil {
 		log.Fatalf("Exec failed: %v\n", err)
+		return
 	}
-	defer pool.Close()
 
 	affectedRows := result.RowsAffected()
 	fmt.Printf("Inserted %d rows\n", affectedRows)
-	pool.Close()
+
+	// Отправляем ответ клиенту только после завершения всех операций
+	ctx.JSON(http.StatusOK, gin.H{"status": status, "affected_rows": affectedRows})
 }
 
 func send_Email(email models.Email, ctx *gin.Context) error {
@@ -84,6 +89,14 @@ func send_Email(email models.Email, ctx *gin.Context) error {
 	if err = conn.Mail(smtp_con.Username); err != nil {
 		log.Println("Error setting sender:", err)
 		return err
+	}
+
+	if err = conn.Rcpt(email.To); err != nil {
+		log.Printf("CC %s: ошибка - %v", email.To, err)
+		log.Println("Error setting TO EMAIL recipient:", err)
+		return err
+	} else {
+		log.Printf("To %s: успешно отправлено", email.To)
 	}
 
 	pool, err := repository.Repository_db() // Open db connection to RECEPIENTS

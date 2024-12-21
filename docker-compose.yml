@@ -5,13 +5,10 @@ services:
     build: .
     ports:
       - "8080:8080"
-    environment:
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
-      - SMTP_HOST=${SMTP_HOST}
-      - SMTP_PORT=${SMTP_PORT}
-      - USERNAME_GMAIL=${USERNAME_GMAIL}
-      - PASSWORD=${PASSWORD}
+    env_file:
+      - file.env
+  client:
+    build: .
+    depends_on:
+      - app
+    command: go run ./client/Client.go
