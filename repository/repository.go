@@ -15,11 +15,11 @@ func Repository_db() (*pgxpool.Pool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel() // Отменяем контекст, когда функция завершится
 	var db_conf models.DB_config
-	db_conf.Host = os.Getenv("DB_HOST")
-	db_conf.Port = os.Getenv("DB_PORT")
-	db_conf.User = os.Getenv("DB_USER")
-	db_conf.Password = os.Getenv("DB_PASSWORD")
-	db_conf.DB_name = os.Getenv("DB_NAME")
+	db_conf.Host = os.Getenv("POSTGRES_HOST")
+	db_conf.Port = os.Getenv("POSTGRES_PORT")
+	db_conf.User = os.Getenv("POSTGRES_USER")
+	db_conf.Password = os.Getenv("POSTGRES_PASSWORD")
+	db_conf.DB_name = os.Getenv("POSTGRES_DB")
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		db_conf.Host,
 		db_conf.Port,

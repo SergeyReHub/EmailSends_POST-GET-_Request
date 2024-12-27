@@ -1,14 +1,51 @@
-version: '3.8'
 
 services:
+  db:
+    hostname: db
+    image: postgres:16.6
+    container_name: postgres
+    environment:
+      POSTGRES_DB: $POSTGRES_DB
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      PGDATA: /data/DB
+    networks:
+      - email_sender
+    ports:
+      - "$POSTGRES_PORT:$POSTGRES_PORT"
+    volumes:
+      - ./dumpfile.sql:/docker-entrypoint-initdb.d/dumpfile.sql
+    restart: unless-stopped
+
   app:
-    build: .
+    image: golang:1.22.2
+    container_name: server
+    networks:
+      - email_sender
+    working_dir: /app
+    hostname: app
+    volumes:
+        - .:/app
     ports:
       - "8080:8080"
     env_file:
       - file.env
+    command: go run ./cmd/server/main.go
+
   client:
-    build: .
+    image: golang:1.22.2
+    working_dir: /app
+    container_name: client
+    networks:
+      - email_sender
+    volumes:
+        - .:/app
     depends_on:
       - app
+    ports:
+      - "8081:8080"
     command: go run ./client/Client.go
+
+networks:
+  email_sender:
+    driver: bridge
